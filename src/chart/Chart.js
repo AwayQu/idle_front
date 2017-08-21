@@ -104,7 +104,7 @@ export default class Chart extends Component {
   render() {
     return (
       <div>
-        <svg className="bar-chart--stack" ref={(r) => this.chartRef = r}></svg>
+        <svg className="bar-chart--stack" ref={(r) => this.chartRef = r}/>
       </div>
     );
   }
