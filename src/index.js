@@ -1,13 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import Chart from './Chart';
+import './app/index.css';
+import App from './app/App';
 import registerServiceWorker from './registerServiceWorker';
 
 ReactDOM.render((<div>
-  <App />
-  <Chart />
-</div>
+    <App />
+  </div>
 ), document.getElementById('root'));
 registerServiceWorker();
