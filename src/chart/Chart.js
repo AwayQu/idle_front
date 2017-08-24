@@ -9,7 +9,7 @@ function stackMax(serie) {
   return d3.max(serie, (d) => d[1]);
 }
 
-export default class Chart extends Component {
+class Chart extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -109,3 +109,5 @@ export default class Chart extends Component {
     );
   }
 }
+
+export default Chart;
