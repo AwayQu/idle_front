@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "d3": "^4.10.0",
+    "d3": "^5.0.0",
+    "d3-uml": "file:../../../WebstormProjects/d3-uml",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-router": "^4.1.2",
