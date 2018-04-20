@@ -3,6 +3,76 @@ import * as d3 from 'd3';
 import {ClassDiagramRender, ClassDiagramGraph} from "d3-uml/src/uml/uml";
 import {Relation} from "d3-uml/src/uml/class-diagram-relationship"
 import API from '../api'
+import {Treebeard} from "react-treebeard";
+
+const data = {
+    name: 'root',
+    toggled: true,
+    children: [
+        {
+            name: 'parent',
+            children: [
+                {name: 'child1'},
+                {name: 'child2'}
+            ]
+        },
+        {
+            name: 'loading parent',
+            loading: true,
+            children: []
+        },
+        {
+            name: 'parent',
+            children: [
+                {
+                    name: 'nested parent',
+                    children: [
+                        {name: 'nested child 1'},
+                        {name: 'nested child 2'}
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
+class TreeExample extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+        this.onToggle = this.onToggle.bind(this);
+    }
+
+    onToggle(node, toggled) {
+        if (this.state.cursor) {
+            this.state.cursor.active = false;
+        }
+        node.active = true;
+        if (node.children) {
+            node.toggled = toggled;
+        }
+        this.setState({cursor: node});
+    }
+
+    render() {
+        const treeStyle = {
+            width: '20%',
+            height: '100%',
+            display: 'inline-block',
+            verticalAlign: "top"
+
+        }
+        return (
+            <div style={treeStyle}>
+                <Treebeard
+
+                    data={data}
+                    onToggle={this.onToggle}
+                />
+            </div>
+        );
+    }
+}
 
 class ClassDiagramViewDynamic extends Component {
     constructor(props) {
@@ -37,7 +107,12 @@ class ClassDiagramViewDynamic extends Component {
             .attr("width", 1500)
             .attr("height", 1200);
 
-        var inner = svg.append("g")
+        //region clear previous data
+        var inner = svg.select("g");
+        if (!inner.node()) {
+            inner = svg.append("g")
+        }
+        //endregion
 
         // Set up zoom support
         var zoom = d3.zoom().on("zoom", function () {
@@ -63,7 +138,7 @@ class ClassDiagramViewDynamic extends Component {
 
     handleSubmit() {
         API.post('github/project', {
-            "url" : this.state.repo
+            "url": this.state.repo
         }).then(res => {
         });
     }
@@ -75,14 +150,18 @@ class ClassDiagramViewDynamic extends Component {
     }
 
 
-
     componentDidMount() {
 
     }
 
     render() {
 
-
+        const svgStyle = {
+            background: "yellow",
+            verticalAlign: "top",
+            display: "inline-block",
+            width:"80%"
+        }
         return (
 
             <div>
@@ -94,7 +173,8 @@ class ClassDiagramViewDynamic extends Component {
                 <form onSubmit={() => this.handleGetDiagram()}>
                     <button type="submit">Submit Get Diagram</button>
                 </form>
-                <svg className="svg" ref={(r) => this.chartRef = r}/>
+                <TreeExample/>
+                <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
             </div>
         );
     }
