@@ -14,29 +14,41 @@ export default class Page extends React.Component {
     }
 
     render() {
+        const liStyle = {
+            float: 'left',
+            marginLeft: 20,
+        };
+        const clearStyle = {
+            clear: 'both'
+        }
+        const hrStyle = {
+            marginTop: 10
+        };
+
         return (
             <HashRouter>
                 <div>
                     <div>
                         <ul>
-                            <li>
+                            <li style={liStyle}>
                                 <Link to="/">Home</Link>
                             </li>
-                            <li>
+                            <li style={liStyle}>
                                 <Link to="/chart">chart</Link>
                             </li>
-                            <li>
+                            <li style={liStyle}>
                                 <Link to="/tree">tree</Link>
                             </li>
-                            <li>
+                            <li style={liStyle}>
                                 <Link to="/classDiagram">Class diagram</Link>
                             </li>
-                            <li>
+                            <li style={liStyle}>
                                 <Link to="/classDiagramDynamic">Class diagram</Link>
                             </li>
                         </ul>
+                        <div style={clearStyle}></div>
 
-                        <hr/>
+                        <hr style={hrStyle}/>
                     </div>
                     <Route path="/" component={App}/>
                     <Route path="/chart" component={Chart}/>

@@ -2,147 +2,19 @@ import React, {Component} from 'react';
 import * as d3 from 'd3';
 import {ClassDiagramRender, ClassDiagramGraph} from "d3-uml/src/uml/uml";
 import {Relation} from "d3-uml/src/uml/class-diagram-relationship"
+import API from '../api'
 
 class ClassDiagramViewDynamic extends Component {
     constructor(props) {
         super(props);
+        this.handleRepoChange = this.handleRepoChange.bind(this);
         this.state = {
-            data: []
+            data: [],
+            repo: "ios_hello",
         };
     }
 
-    componentDidMount() {
-        var data = {
-                "classes":
-                    [{
-                        "className": "ViewController()",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(ViewController())$FILE(ViewController.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Child",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(Child)$FILE(AppDelegate.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Parent",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(Parent)$FILE(AppDelegate.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "ViewController",
-                        "attributes": [],
-                        "methods": ["viewDidLoad", "didReceiveMemoryWarning"],
-                        "identify": "$CLASS(ViewController)$FILE(ViewController.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "HelloWorldAppTests",
-                        "attributes": [],
-                        "methods": ["setUp", "tearDown", "testExample", "testPerformanceExample"],
-                        "identify": "$CLASS(HelloWorldAppTests)$FILE(HelloWorldAppTests.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldAppTests)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Hello",
-                        "attributes": [],
-                        "methods": ["return_hello", "null_dereference_bug", "ivar_not_nullable_bug:(Hello*)hello", "parameter_not_null_checked_bug:(Hello*)hello"],
-                        "identify": "$CLASS(Hello)$FILE(Hello.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "AppDelegate",
-                        "attributes": [],
-                        "methods": ["memory_leak_bug", "resource_leak_bug", "npe_in_array_literal_bug", "premature_nil_termination_argument_bug", "retain_cycle_bug"],
-                        "identify": "$CLASS(AppDelegate)$FILE(AppDelegate.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Parent",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(Parent)$FILE(AppDelegate.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "AppDelegate()",
-                        "attributes": ["(^retain_cycle_block)()", "string"],
-                        "methods": [],
-                        "identify": "$CLASS(AppDelegate())$FILE(AppDelegate.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Child",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(Child)$FILE(AppDelegate.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Hello",
-                        "attributes": ["s", "hello"],
-                        "methods": ["load", "return_hello", "null_dereference_bug", "ivar_not_nullable_bug:(Hello*)hello", "parameter_not_null_checked_bug:(Hello*)hello"],
-                        "identify": "$CLASS(Hello)$FILE(Hello.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "AppDelegate",
-                        "attributes": ["window"],
-                        "methods": [],
-                        "identify": "$CLASS(AppDelegate)$FILE(AppDelegate.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "ViewController",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(ViewController)$FILE(ViewController.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "Hello()",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "$CLASS(Hello())$FILE(Hello.m)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)"
-                    }, {
-                        "className": "NSObject",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "NSObject"
-                    }, {
-                        "className": "NSObject",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "NSObject"
-                    }, {
-                        "className": "NSObject",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "NSObject"
-                    }, {
-                        "className": "UIResponder",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "UIResponder"
-                    }, {
-                        "className": "UIViewController",
-                        "attributes": [],
-                        "methods": [],
-                        "identify": "UIViewController"
-                    }], "relations":
-                    [{
-                        "fromIdentify": "$CLASS(Parent)$FILE(AppDelegate.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)",
-                        "fromClassName": "Parent",
-                        "toIdentify": "NSObject",
-                        "toClassName": "NSObject",
-                        "relation": "Realization"
-                    }, {
-                        "fromIdentify": "$CLASS(Child)$FILE(AppDelegate.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)",
-                        "fromClassName": "Child",
-                        "toIdentify": "NSObject",
-                        "toClassName": "NSObject",
-                        "relation": "Realization"
-                    }, {
-                        "fromIdentify": "$CLASS(Hello)$FILE(Hello.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)",
-                        "fromClassName": "Hello",
-                        "toIdentify": "NSObject",
-                        "toClassName": "NSObject",
-                        "relation": "Realization"
-                    }, {
-                        "fromIdentify": "$CLASS(AppDelegate)$FILE(AppDelegate.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)",
-                        "fromClassName": "AppDelegate",
-                        "toIdentify": "UIResponder",
-                        "toClassName": "UIResponder",
-                        "relation": "Realization"
-                    }, {
-                        "fromIdentify": "$CLASS(ViewController)$FILE(ViewController.h)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello%2FHelloWorldApp)$PATH(.%2Fsrc%2Ftest%2Fjava%2Fresources%2Fuml%2Fproject%2Fios_hello)",
-                        "fromClassName": "ViewController",
-                        "toIdentify": "UIViewController",
-                        "toClassName": "UIViewController",
-                        "relation": "Realization"
-                    }]
-            }
-        ;
+    renderGraph(data) {
 
         var g = new ClassDiagramGraph().setGraph({});
 
@@ -185,15 +57,42 @@ class ClassDiagramViewDynamic extends Component {
         // svg.attr('height', g.graph().height * initialScale + 40);
     }
 
+    handleRepoChange(e) {
+        this.setState({repo: e.target.value});
+    }
+
+    handleSubmit() {
+        API.post('github/project', {
+            "url" : this.state.repo
+        }).then(res => {
+        });
+    }
+
+    handleGetDiagram() {
+        API.get('github').then(res => {
+            this.renderGraph(res.data);
+        });
+    }
+
+
+
+    componentDidMount() {
+
+    }
+
     render() {
 
 
         return (
 
             <div>
-                <form action="http://127.0.0.1" method="post">
-                    <input name="repo"/>
-                    <input type="submit"/>
+                <form onSubmit={() => this.handleSubmit()}>
+                    <input name="repo" value={this.state.repo} onChange={this.handleRepoChange}/>
+                    <button type="submit">Submit repo</button>
+                </form>
+
+                <form onSubmit={() => this.handleGetDiagram()}>
+                    <button type="submit">Submit Get Diagram</button>
                 </form>
                 <svg className="svg" ref={(r) => this.chartRef = r}/>
             </div>
