@@ -9,6 +9,7 @@ import Tree, {TreeNode} from 'rc-tree';
 import PropTypes from 'prop-types';
 
 class RadioTree extends React.Component {
+    // TODO: expandAll 失效了
     static propTypes = {
         multiple: PropTypes.bool,
     };
@@ -31,7 +32,24 @@ class RadioTree extends React.Component {
         super(props);
         this.style = props.style;
         this.onCheckKeys = props.onCheckKeys;
+        this.treeData= props.treeData;
+
     }
+
+    componentDidMount() {
+        this.setState({
+            treeData: this.treeData
+        })
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.treeData = nextProps.treeData;
+        this.setState({
+            treeData: this.treeData
+        })
+
+    }
+
 
     onExpand = (expandedKeys) => {
         console.log('onExpand', arguments);
@@ -57,9 +75,9 @@ class RadioTree extends React.Component {
 
     }
     triggerChecked = () => {
-        this.setState({
-            checkedKeys: [`0-0-${parseInt(Math.random() * 3, 10)}-key`],
-        });
+        // this.setState({
+        //     checkedKeys: [`0-0-${parseInt(Math.random() * 3, 10)}-key`],
+        // });
     }
 
     render() {
@@ -88,13 +106,14 @@ class RadioTree extends React.Component {
 
             <h2>controlled</h2>
             <Tree
-                checkable defaultExpandAll
+                checkable
                 onExpand={this.onExpand} expandedKeys={this.state.expandedKeys}
+                defaultExpandAll
                 autoExpandParent={this.state.autoExpandParent}
                 onCheck={this.onCheck} checkedKeys={this.state.checkedKeys}
                 onSelect={this.onSelect} selectedKeys={this.state.selectedKeys}
             >
-                {loop(gData)}
+                {loop(this.state.treeData)}
             </Tree>
             <button onClick={this.triggerChecked}>trigger checked</button>
         </div>);
@@ -108,6 +127,7 @@ class ClassDiagramViewDynamic extends Component {
         this.state = {
             data: [],
             repo: "ios_hello",
+            tree: []
         };
     }
 
@@ -159,19 +179,64 @@ class ClassDiagramViewDynamic extends Component {
         // svg.attr('height', g.graph().height * initialScale + 40);
     }
 
+    handleGetFileTree(e) {
+        e.preventDefault()
+        API.post("github/fileTree").then((res) => {
+            this.renderFileTree(res.data);
+
+        })
+    }
+
+    renderFileTree(data) {
+        const holdDict = {};
+        const res = [];
+        const cacheFind = (h, id) => {
+            if (h[id]) {
+                return h[id]
+            } else {
+                h[id] = {};
+                return h[id]
+            }
+        };
+        data.fds.forEach((v, i) => {
+
+
+            const n = cacheFind(holdDict, v.identify);
+            n.title = v.name;
+            n.key = v.identify;
+
+            if (v.parent) {
+                const parentN = cacheFind(holdDict, v.parent);
+                if (!parentN.children) {
+                    parentN.children = []
+                }
+                parentN.children.push(n)
+            } else {
+                res.push(n)
+            }
+        });
+
+        this.setState({
+            tree: res
+        });
+    }
+
+
     handleRepoChange(e) {
         this.setState({repo: e.target.value});
     }
 
-    handleSubmit() {
+    handleSubmit(e) {
+        e.preventDefault();
         API.post('github/project', {
             "url": this.state.repo
         }).then(res => {
         });
     }
 
-    handleGetDiagram() {
-        API.get('github').then(res => {
+    handleGetDiagram(e) {
+        e.preventDefault()
+        API.post('github').then(res => {
             this.renderGraph(res.data);
         });
     }
@@ -203,15 +268,19 @@ class ClassDiagramViewDynamic extends Component {
         return (
 
             <div>
-                <form onSubmit={() => this.handleSubmit()}>
+                <form onSubmit={(e) => this.handleSubmit(e)}>
                     <input name="repo" value={this.state.repo} onChange={this.handleRepoChange}/>
                     <button type="submit">Submit repo</button>
                 </form>
 
-                <form onSubmit={() => this.handleGetDiagram()}>
+                <form onSubmit={(e) => this.handleGetDiagram(e)}>
                     <button type="submit">Submit Get Diagram</button>
                 </form>
-                <RadioTree style={treeStyle} onCheckKeys={this.onCheckKeys}/>
+
+                <form onSubmit={(e) => this.handleGetFileTree(e)}>
+                    <button type="submit">Submit Get File Tree</button>
+                </form>
+                <RadioTree treeData={this.state.tree ? this.state.tree:[]} style={treeStyle} onCheckKeys={this.onCheckKeys}/>
                 <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
             </div>
         );
