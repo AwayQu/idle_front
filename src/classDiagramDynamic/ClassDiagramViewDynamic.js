@@ -1,76 +1,163 @@
+import './index.less';
 import React, {Component} from 'react';
 import * as d3 from 'd3';
 import {ClassDiagramRender, ClassDiagramGraph} from "d3-uml/src/uml/uml";
 import {Relation} from "d3-uml/src/uml/class-diagram-relationship"
 import API from '../api'
-import {Treebeard} from "react-treebeard";
+import {gData, getRadioSelectKeys} from "./util";
+import Tree, { TreeNode } from 'rc-tree';
+import PropTypes from 'prop-types';
 
-const data = {
-    name: 'root',
-    toggled: true,
-    children: [
-        {
-            name: 'parent',
-            children: [
-                {name: 'child1'},
-                {name: 'child2'}
-            ]
-        },
-        {
-            name: 'loading parent',
-            loading: true,
-            children: []
-        },
-        {
-            name: 'parent',
-            children: [
-                {
-                    name: 'nested parent',
-                    children: [
-                        {name: 'nested child 1'},
-                        {name: 'nested child 2'}
-                    ]
-                }
-            ]
-        }
-    ]
-};
+class RadioTree extends React.Component {
+    static propTypes = {
+        multiple: PropTypes.bool,
+    };
+    static defaultProps = {
+        visible: false,
+        multiple: true,
+    };
 
-class TreeExample extends React.Component {
+    state = {
+        // expandedKeys: getFilterExpandedKeys(gData, ['0-0-0-key']),
+        expandedKeys: ['0-0-0-key'],
+        autoExpandParent: true,
+        // checkedKeys: ['0-0-0-0-key', '0-0-1-0-key', '0-1-0-0-key'],
+        checkedKeys: ['0-0-0-key'],
+        checkStrictlyKeys: {checked: ['0-0-1-key'], halfChecked: []},
+        selectedKeys: [],
+        treeData: [],
+    };
+
     constructor(props) {
-        super(props);
-        this.state = {};
-        this.onToggle = this.onToggle.bind(this);
+        super(props)
+        this.style = props.style
     }
-
-    onToggle(node, toggled) {
-        if (this.state.cursor) {
-            this.state.cursor.active = false;
+    onExpand = (expandedKeys) => {
+        console.log('onExpand', arguments);
+        // if not set autoExpandParent to false, if children expanded, parent can not collapse.
+        // or, you can remove all expanded chilren keys.
+        this.setState({
+            expandedKeys,
+            autoExpandParent: false,
+        });
+    }
+    onCheck = (checkedKeys) => {
+        this.setState({
+            checkedKeys,
+        });
+    }
+    onCheckStrictly = (checkedKeys, /* extra*/) => {
+        console.log(arguments);
+        // const { checkedNodesPositions } = extra;
+        // const pps = filterParentPosition(checkedNodesPositions.map(i => i.pos));
+        // console.log(checkedNodesPositions.filter(i => pps.indexOf(i.pos) > -1).map(i => i.node.key));
+        const cks = {
+            checked: checkedKeys.checked || checkedKeys,
+            halfChecked: [`0-0-${parseInt(Math.random() * 3, 10)}-key`],
+        };
+        this.setState({
+            // checkedKeys,
+            checkStrictlyKeys: cks,
+            // checkStrictlyKeys: checkedKeys,
+        });
+    }
+    onSelect = (selectedKeys, info) => {
+        console.log('onSelect', selectedKeys, info);
+        this.setState({
+            selectedKeys,
+        });
+    }
+    onRbSelect = (selectedKeys, info) => {
+        let _selectedKeys = selectedKeys;
+        if (info.selected) {
+            _selectedKeys = getRadioSelectKeys(gData, selectedKeys, info.node.props.eventKey);
         }
-        node.active = true;
-        if (node.children) {
-            node.toggled = toggled;
-        }
-        this.setState({cursor: node});
+        this.setState({
+            selectedKeys: _selectedKeys,
+        });
+    }
+    onClose = () => {
+        this.setState({
+            visible: false,
+        });
+    }
+    handleOk = () => {
+        this.setState({
+            visible: false,
+        });
+    }
+    showModal = () => {
+        this.setState({
+            expandedKeys: ['0-0-0-key', '0-0-1-key'],
+            checkedKeys: ['0-0-0-key'],
+            visible: true,
+        });
+        // simulate Ajax
+        setTimeout(() => {
+            this.setState({
+                treeData: [...gData],
+            });
+        }, 2000);
+    }
+    triggerChecked = () => {
+        this.setState({
+            checkedKeys: [`0-0-${parseInt(Math.random() * 3, 10)}-key`],
+        });
     }
 
     render() {
-        const treeStyle = {
-            width: '20%',
-            height: '100%',
-            display: 'inline-block',
-            verticalAlign: "top"
+        const loop = data => {
+            return data.map((item) => {
+                if (item.children) {
+                    return (
+                        <TreeNode
+                            key={item.key} title={item.title}
+                            disableCheckbox={item.key === '0-0-0-key'}
+                        >
+                            {loop(item.children)}
+                        </TreeNode>
+                    );
+                }
+                return <TreeNode key={item.key} title={item.title}/>;
+            });
+        };
 
-        }
-        return (
-            <div style={treeStyle}>
-                <Treebeard
 
-                    data={data}
-                    onToggle={this.onToggle}
-                />
-            </div>
-        );
+        // console.log(getRadioSelectKeys(gData, this.state.selectedKeys));
+        return (<div style={this.style}>
+
+            <h2>controlled</h2>
+            <Tree
+                checkable
+                onExpand={this.onExpand} expandedKeys={this.state.expandedKeys}
+                autoExpandParent={this.state.autoExpandParent}
+                onCheck={this.onCheck} checkedKeys={this.state.checkedKeys}
+                onSelect={this.onSelect} selectedKeys={this.state.selectedKeys}
+            >
+                {loop(gData)}
+            </Tree>
+            <button onClick={this.triggerChecked}>trigger checked</button>
+
+            <h2>checkStrictly</h2>
+            <Tree
+                checkable multiple={this.props.multiple} defaultExpandAll
+                onExpand={this.onExpand} expandedKeys={this.state.expandedKeys}
+                onCheck={this.onCheckStrictly}
+                checkedKeys={this.state.checkStrictlyKeys}
+                checkStrictly
+            >
+                {loop(gData)}
+            </Tree>
+
+            <h2>radio's behavior select (in the same level)</h2>
+            <Tree
+                multiple defaultExpandAll
+                onSelect={this.onRbSelect}
+                selectedKeys={getRadioSelectKeys(gData, this.state.selectedKeys)}
+            >
+                {loop(gData)}
+            </Tree>
+        </div>);
     }
 }
 
@@ -156,11 +243,18 @@ class ClassDiagramViewDynamic extends Component {
 
     render() {
 
+        const treeStyle = {
+            width: '20%',
+            height: '100%',
+            display: 'inline-block',
+            verticalAlign: "top",
+            // padding: '0 20px'
+        }
         const svgStyle = {
             background: "yellow",
             verticalAlign: "top",
             display: "inline-block",
-            width:"80%"
+            width: "80%"
         }
         return (
 
@@ -173,7 +267,7 @@ class ClassDiagramViewDynamic extends Component {
                 <form onSubmit={() => this.handleGetDiagram()}>
                     <button type="submit">Submit Get Diagram</button>
                 </form>
-                <TreeExample/>
+                <RadioTree style ={treeStyle}/>
                 <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
             </div>
         );
