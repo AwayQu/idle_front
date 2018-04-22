@@ -5,7 +5,7 @@ import {ClassDiagramRender, ClassDiagramGraph} from "d3-uml/src/uml/uml";
 import {Relation} from "d3-uml/src/uml/class-diagram-relationship"
 import API from '../api'
 import {gData, getRadioSelectKeys} from "./util";
-import Tree, { TreeNode } from 'rc-tree';
+import Tree, {TreeNode} from 'rc-tree';
 import PropTypes from 'prop-types';
 
 class RadioTree extends React.Component {
@@ -19,19 +19,20 @@ class RadioTree extends React.Component {
 
     state = {
         // expandedKeys: getFilterExpandedKeys(gData, ['0-0-0-key']),
-        expandedKeys: ['0-0-0-key'],
+        expandedKeys: [],
         autoExpandParent: true,
-        // checkedKeys: ['0-0-0-0-key', '0-0-1-0-key', '0-1-0-0-key'],
-        checkedKeys: ['0-0-0-key'],
-        checkStrictlyKeys: {checked: ['0-0-1-key'], halfChecked: []},
+        checkedKeys: [],
+        checkStrictlyKeys: {checked: [], halfChecked: []},
         selectedKeys: [],
         treeData: [],
     };
 
     constructor(props) {
-        super(props)
-        this.style = props.style
+        super(props);
+        this.style = props.style;
+        this.onCheckKeys = props.onCheckKeys;
     }
+
     onExpand = (expandedKeys) => {
         console.log('onExpand', arguments);
         // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -42,62 +43,18 @@ class RadioTree extends React.Component {
         });
     }
     onCheck = (checkedKeys) => {
+        console.log(checkedKeys);
         this.setState({
             checkedKeys,
         });
-    }
-    onCheckStrictly = (checkedKeys, /* extra*/) => {
-        console.log(arguments);
-        // const { checkedNodesPositions } = extra;
-        // const pps = filterParentPosition(checkedNodesPositions.map(i => i.pos));
-        // console.log(checkedNodesPositions.filter(i => pps.indexOf(i.pos) > -1).map(i => i.node.key));
-        const cks = {
-            checked: checkedKeys.checked || checkedKeys,
-            halfChecked: [`0-0-${parseInt(Math.random() * 3, 10)}-key`],
-        };
-        this.setState({
-            // checkedKeys,
-            checkStrictlyKeys: cks,
-            // checkStrictlyKeys: checkedKeys,
-        });
+        this.onCheckKeys(checkedKeys)
     }
     onSelect = (selectedKeys, info) => {
         console.log('onSelect', selectedKeys, info);
         this.setState({
             selectedKeys,
         });
-    }
-    onRbSelect = (selectedKeys, info) => {
-        let _selectedKeys = selectedKeys;
-        if (info.selected) {
-            _selectedKeys = getRadioSelectKeys(gData, selectedKeys, info.node.props.eventKey);
-        }
-        this.setState({
-            selectedKeys: _selectedKeys,
-        });
-    }
-    onClose = () => {
-        this.setState({
-            visible: false,
-        });
-    }
-    handleOk = () => {
-        this.setState({
-            visible: false,
-        });
-    }
-    showModal = () => {
-        this.setState({
-            expandedKeys: ['0-0-0-key', '0-0-1-key'],
-            checkedKeys: ['0-0-0-key'],
-            visible: true,
-        });
-        // simulate Ajax
-        setTimeout(() => {
-            this.setState({
-                treeData: [...gData],
-            });
-        }, 2000);
+
     }
     triggerChecked = () => {
         this.setState({
@@ -106,13 +63,16 @@ class RadioTree extends React.Component {
     }
 
     render() {
+        /**
+         * value format: [{ key: "key", title: "child", children:["", ""]}]
+         */
         const loop = data => {
             return data.map((item) => {
                 if (item.children) {
                     return (
                         <TreeNode
                             key={item.key} title={item.title}
-                            disableCheckbox={item.key === '0-0-0-key'}
+                            // disableCheckbox={item.key === '0-0-0-key'}
                         >
                             {loop(item.children)}
                         </TreeNode>
@@ -128,7 +88,7 @@ class RadioTree extends React.Component {
 
             <h2>controlled</h2>
             <Tree
-                checkable
+                checkable defaultExpandAll
                 onExpand={this.onExpand} expandedKeys={this.state.expandedKeys}
                 autoExpandParent={this.state.autoExpandParent}
                 onCheck={this.onCheck} checkedKeys={this.state.checkedKeys}
@@ -137,26 +97,6 @@ class RadioTree extends React.Component {
                 {loop(gData)}
             </Tree>
             <button onClick={this.triggerChecked}>trigger checked</button>
-
-            <h2>checkStrictly</h2>
-            <Tree
-                checkable multiple={this.props.multiple} defaultExpandAll
-                onExpand={this.onExpand} expandedKeys={this.state.expandedKeys}
-                onCheck={this.onCheckStrictly}
-                checkedKeys={this.state.checkStrictlyKeys}
-                checkStrictly
-            >
-                {loop(gData)}
-            </Tree>
-
-            <h2>radio's behavior select (in the same level)</h2>
-            <Tree
-                multiple defaultExpandAll
-                onSelect={this.onRbSelect}
-                selectedKeys={getRadioSelectKeys(gData, this.state.selectedKeys)}
-            >
-                {loop(gData)}
-            </Tree>
         </div>);
     }
 }
@@ -241,10 +181,14 @@ class ClassDiagramViewDynamic extends Component {
 
     }
 
+    onCheckKeys(checkedKeys) {
+        console.log(checkedKeys)
+    }
+
     render() {
 
         const treeStyle = {
-            width: '20%',
+            width: '30%',
             height: '100%',
             display: 'inline-block',
             verticalAlign: "top",
@@ -254,7 +198,7 @@ class ClassDiagramViewDynamic extends Component {
             background: "yellow",
             verticalAlign: "top",
             display: "inline-block",
-            width: "80%"
+            width: "70%"
         }
         return (
 
@@ -267,7 +211,7 @@ class ClassDiagramViewDynamic extends Component {
                 <form onSubmit={() => this.handleGetDiagram()}>
                     <button type="submit">Submit Get Diagram</button>
                 </form>
-                <RadioTree style ={treeStyle}/>
+                <RadioTree style={treeStyle} onCheckKeys={this.onCheckKeys}/>
                 <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
             </div>
         );
