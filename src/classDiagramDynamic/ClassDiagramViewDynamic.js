@@ -1,5 +1,6 @@
 import './index.less';
 import React, {Component} from 'react';
+import _ from 'lodash';
 import * as d3 from 'd3';
 import {ClassDiagramRender, ClassDiagramGraph} from "d3-uml/src/uml/uml";
 import {Relation} from "d3-uml/src/uml/class-diagram-relationship"
@@ -32,7 +33,7 @@ class RadioTree extends React.Component {
         super(props);
         this.style = props.style;
         this.onCheckKeys = props.onCheckKeys;
-        this.treeData= props.treeData;
+        this.treeData = props.treeData;
 
     }
 
@@ -131,10 +132,112 @@ class ClassDiagramViewDynamic extends Component {
         };
     }
 
+    processDataAndRelations(data) {
+        var classes = data["classes"];
+        var relations = data["relations"];
+
+        const groups = [];
+        var current_group = {nodes: [], relations: []};
+        groups.push(current_group);
+        var stop = false;
+
+        var nextRe = relations.slice();
+        while (nextRe.length !== 0) {
+            var added = false;
+            const rs = nextRe.slice();
+            rs.forEach(function (v, i) {
+                if (current_group.nodes.length === 0) {
+                    var k1 = v.fromIdentify,
+                        k2 = v.toIdentify;
+
+                    var index = nextRe.indexOf(v);
+                    if (index > -1) {
+                        nextRe.splice(index, 1);
+                    }
+
+                    // if (current_group.relations.indexOf(v) === -1) {
+                    if (JSON.stringify(current_group.relations).indexOf(JSON.stringify(v))!==-1) {
+                        current_group.relations.push(v);
+                    }
+                    // }
+                    current_group.nodes.push(k1);
+                    current_group.nodes.push(k2);
+                    added = true;
+
+                } else {
+
+                    var k1 = v.fromIdentify,
+                        k2 = v.toIdentify;
+                    let find1 = current_group.nodes.indexOf(k1);
+                    let find2 = current_group.nodes.indexOf(k2);
+
+                    if (find1 !== -1) {
+                        if (JSON.stringify(current_group.relations).indexOf(JSON.stringify(v))!==-1) {
+                            current_group.relations.push(v);
+                        } else {
+                            console.log("error")
+                        }
+                        if (find2 === -1) {
+                            current_group.nodes.push(k2);
+                        }
+                        added = true;
+
+                        var index = nextRe.indexOf(v);
+                        if (index > -1) {
+                            nextRe.splice(index, 1);
+                        }
+
+                    }
+
+                    if (find2 !== -1) {
+                        if (JSON.stringify(current_group.relations).indexOf(JSON.stringify(v))!==-1) {
+                            current_group.relations.push(v);
+                        } else {
+                            console.log("error")
+                        }
+                        if (find1 === -1) {
+                            current_group.nodes.push(k1);
+                        }
+                        added = true;
+
+                        var index = nextRe.indexOf(v);
+                        if (index > -1) {
+                            nextRe.splice(index, 1);
+                        }
+                    }
+                }
+            });
+            if (!added) {
+                current_group = {nodes: [], relations: []};
+                groups.push(current_group);
+            }
+        }
+
+        var classes1 = []
+        groups.forEach(function (v, i) {
+            var col = [];
+            classes1.push(col)
+           v.relations.forEach(function (v1, i1) {
+               classes.forEach(function (v3, i3) {
+                   var k1 = v1.fromIdentify,
+                       k2 = v1.toIdentify;
+                   if (v3.identify === k1 || v3.identify === k2) {
+                       if (classes.indexOf(v3) !== -1) {
+                            col.push(v3)
+                       }
+                   }
+                })
+               })
+           })
+
+        console.log(groups);
+    }
+
     renderGraph(data) {
 
         var g = new ClassDiagramGraph().setGraph({});
 
+        this.processDataAndRelations(data);
         var classes = data["classes"];
         var relations = data["relations"];
 
@@ -143,6 +246,9 @@ class ClassDiagramViewDynamic extends Component {
             v.x = 0;
             v.y = 0;
             v.width = 260;
+            v.fold = false;
+            // v.foldMethod = true;
+            // v.foldAttribute = true;
             g.setClassDiagramNode(v);
         });
 
@@ -241,12 +347,20 @@ class ClassDiagramViewDynamic extends Component {
         });
     }
 
+    handleGetDiagramFromCheckFiles(e) {
+        e.preventDefault()
+        API.post('/github/diagram/files', {"identifies": this.checkedKeys}).then(res => {
+            this.renderGraph(res.data)
+        })
+
+    }
 
     componentDidMount() {
 
     }
 
     onCheckKeys(checkedKeys) {
+        this.checkedKeys = checkedKeys;
         console.log(checkedKeys)
     }
 
@@ -280,7 +394,15 @@ class ClassDiagramViewDynamic extends Component {
                 <form onSubmit={(e) => this.handleGetFileTree(e)}>
                     <button type="submit">Submit Get File Tree</button>
                 </form>
-                <RadioTree treeData={this.state.tree ? this.state.tree:[]} style={treeStyle} onCheckKeys={this.onCheckKeys}/>
+
+                <form onSubmit={(e) => this.handleGetDiagramFromCheckFiles(e)}>
+                    <button type="submit">Submit Get Diagram From Check Files</button>
+                </form>
+
+                <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
+                           onCheckKeys={(k) => {
+                               this.onCheckKeys(k)
+                           }}/>
                 <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
             </div>
         );
