@@ -1,4 +1,5 @@
 import './index.less';
+import './ClassDiagramViewDynamic.css';
 import React, {Component} from 'react';
 import _ from 'lodash';
 import * as d3 from 'd3';
@@ -8,6 +9,7 @@ import API from '../api'
 import {gData, getRadioSelectKeys} from "./util";
 import Tree, {TreeNode} from 'rc-tree';
 import PropTypes from 'prop-types';
+
 
 class RadioTree extends React.Component {
     // TODO: expandAll 失效了
@@ -105,6 +107,7 @@ class RadioTree extends React.Component {
         // console.log(getRadioSelectKeys(gData, this.state.selectedKeys));
         return (<div style={this.style}>
 
+
             <h2>controlled</h2>
             <Tree
                 checkable
@@ -132,112 +135,11 @@ class ClassDiagramViewDynamic extends Component {
         };
     }
 
-    processDataAndRelations(data) {
-        var classes = data["classes"];
-        var relations = data["relations"];
 
-        const groups = [];
-        var current_group = {nodes: [], relations: []};
-        groups.push(current_group);
-        var stop = false;
-
-        var nextRe = relations.slice();
-        while (nextRe.length !== 0) {
-            var added = false;
-            const rs = nextRe.slice();
-            rs.forEach(function (v, i) {
-                if (current_group.nodes.length === 0) {
-                    var k1 = v.fromIdentify,
-                        k2 = v.toIdentify;
-
-                    var index = nextRe.indexOf(v);
-                    if (index > -1) {
-                        nextRe.splice(index, 1);
-                    }
-
-                    // if (current_group.relations.indexOf(v) === -1) {
-                    if (JSON.stringify(current_group.relations).indexOf(JSON.stringify(v))!==-1) {
-                        current_group.relations.push(v);
-                    }
-                    // }
-                    current_group.nodes.push(k1);
-                    current_group.nodes.push(k2);
-                    added = true;
-
-                } else {
-
-                    var k1 = v.fromIdentify,
-                        k2 = v.toIdentify;
-                    let find1 = current_group.nodes.indexOf(k1);
-                    let find2 = current_group.nodes.indexOf(k2);
-
-                    if (find1 !== -1) {
-                        if (JSON.stringify(current_group.relations).indexOf(JSON.stringify(v))!==-1) {
-                            current_group.relations.push(v);
-                        } else {
-                            console.log("error")
-                        }
-                        if (find2 === -1) {
-                            current_group.nodes.push(k2);
-                        }
-                        added = true;
-
-                        var index = nextRe.indexOf(v);
-                        if (index > -1) {
-                            nextRe.splice(index, 1);
-                        }
-
-                    }
-
-                    if (find2 !== -1) {
-                        if (JSON.stringify(current_group.relations).indexOf(JSON.stringify(v))!==-1) {
-                            current_group.relations.push(v);
-                        } else {
-                            console.log("error")
-                        }
-                        if (find1 === -1) {
-                            current_group.nodes.push(k1);
-                        }
-                        added = true;
-
-                        var index = nextRe.indexOf(v);
-                        if (index > -1) {
-                            nextRe.splice(index, 1);
-                        }
-                    }
-                }
-            });
-            if (!added) {
-                current_group = {nodes: [], relations: []};
-                groups.push(current_group);
-            }
-        }
-
-        var classes1 = []
-        groups.forEach(function (v, i) {
-            var col = [];
-            classes1.push(col)
-           v.relations.forEach(function (v1, i1) {
-               classes.forEach(function (v3, i3) {
-                   var k1 = v1.fromIdentify,
-                       k2 = v1.toIdentify;
-                   if (v3.identify === k1 || v3.identify === k2) {
-                       if (classes.indexOf(v3) !== -1) {
-                            col.push(v3)
-                       }
-                   }
-                })
-               })
-           })
-
-        console.log(groups);
-    }
-
-    renderGraph(data) {
-
+    renderGraph(d) {
+        var data = d[0];
         var g = new ClassDiagramGraph().setGraph({});
 
-        this.processDataAndRelations(data);
         var classes = data["classes"];
         var relations = data["relations"];
 
@@ -382,6 +284,17 @@ class ClassDiagramViewDynamic extends Component {
         return (
 
             <div>
+                <div className="inputBox" >
+                    <div className="input-group">
+                        <span className="input-group-addon">
+                          <i className="fa fa-search"/>
+                        </span>
+                        <input className="form-control"
+                               placeholder="Input project url ..."
+                               type="text"/>
+                    </div>
+                </div>
+
                 <form onSubmit={(e) => this.handleSubmit(e)}>
                     <input name="repo" value={this.state.repo} onChange={this.handleRepoChange}/>
                     <button type="submit">Submit repo</button>
