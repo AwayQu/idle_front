@@ -270,17 +270,18 @@ class ClassDiagramViewDynamic extends Component {
 
         const treeStyle = {
             width: '30%',
-            height: '100%',
             display: 'inline-block',
             verticalAlign: "top",
+            overflowY: "scroll",
+            height: "600px"
             // padding: '0 20px'
-        }
+        };
         const svgStyle = {
             background: "yellow",
             verticalAlign: "top",
             display: "inline-block",
-            width: "70%"
-        }
+            width: "70%",
+        };
         return (
 
             <div>
@@ -312,11 +313,15 @@ class ClassDiagramViewDynamic extends Component {
                     <button type="submit">Submit Get Diagram From Check Files</button>
                 </form>
 
+                <div>
                 <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
                            onCheckKeys={(k) => {
                                this.onCheckKeys(k)
                            }}/>
+
                 <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
+                </div>
+
             </div>
         );
     }
