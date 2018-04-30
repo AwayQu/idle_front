@@ -9,6 +9,7 @@ import API from '../api'
 import {gData, getRadioSelectKeys} from "./util";
 import Tree, {TreeNode} from 'rc-tree';
 import PropTypes from 'prop-types';
+import {Button, ButtonGroup, DropdownButton, MenuItem} from "react-bootstrap";
 
 
 class RadioTree extends React.Component {
@@ -302,13 +303,18 @@ class ClassDiagramViewDynamic extends Component {
 
         const loop = data => {
             var index = 0;
-            return data.map((d) => {
-                index++;
-                const i = index
-                return <form key={index.toString()} onSubmit={(e) => this.handleShowDiagram(e, i)}>
-                    <button type="submit">Show diagram {index} </button>
-                </form>
-            });
+            return <ButtonGroup style={{marginLeft: "30%", marginTop: "-10%"}}>
+                {data.map((d) => {
+                    const i = index;
+                    index++;
+                    return <Button key={index.toString()} onClick={(e) => this.handleShowDiagram(e, i)}>{i}</Button>
+                })}
+                {/*<DropdownButton title="Dropdown" id="bg-nested-dropdown">*/}
+                {/*<MenuItem eventKey="1">Dropdown link</MenuItem>*/}
+                {/*<MenuItem eventKey="2">Dropdown link</MenuItem>*/}
+                {/*</DropdownButton>*/}
+            </ButtonGroup>;
+
         };
         return (
 
@@ -324,24 +330,27 @@ class ClassDiagramViewDynamic extends Component {
                     </div>
                 </div>
 
-                <form onSubmit={(e) => this.handleSubmit(e)}>
-                    <input name="repo" value={this.state.repo} onChange={this.handleRepoChange}/>
-                    <button type="submit">Submit repo</button>
-                </form>
+                <div style={{width: "30%"}}>
+                    <form onSubmit={(e) => this.handleSubmit(e)}>
+                        <input name="repo" value={this.state.repo} onChange={this.handleRepoChange}/>
+                        <button type="submit">Submit repo</button>
+                    </form>
 
-                <form onSubmit={(e) => this.handleGetDiagram(e)}>
-                    <button type="submit">Submit Get Diagram</button>
-                </form>
+                    <form onSubmit={(e) => this.handleGetDiagram(e)}>
+                        <button type="submit">Submit Get Diagram</button>
+                    </form>
 
-                <form onSubmit={(e) => this.handleGetFileTree(e)}>
-                    <button type="submit">Submit Get File Tree</button>
-                </form>
+                    <form onSubmit={(e) => this.handleGetFileTree(e)}>
+                        <button type="submit">Submit Get File Tree</button>
+                    </form>
 
-                <form onSubmit={(e) => this.handleGetDiagramFromCheckFiles(e)}>
-                    <button type="submit">Submit Get Diagram From Check Files</button>
-                </form>
+                    <form onSubmit={(e) => this.handleGetDiagramFromCheckFiles(e)}>
+                        <button type="submit">Submit Get Diagram From Check Files</button>
+                    </form>
+                </div>
 
                 {loop(this.state.diagrams)}
+
                 <div>
                     <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
                                onCheckKeys={(k) => {
