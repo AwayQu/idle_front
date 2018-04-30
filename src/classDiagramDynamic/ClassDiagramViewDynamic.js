@@ -238,7 +238,6 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     handleSubmit(e) {
-        e.preventDefault();
         API.post('github/project', {
             "url": this.state.repo
         }).then(res => {
@@ -246,20 +245,17 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     handleShowDiagram(e, i) {
-        e.preventDefault();
         const d = this.diagrams[i];
         this.renderGraph(d)
     }
 
     handleGetDiagram(e) {
-        e.preventDefault()
         API.post('github').then(res => {
             this.renderGraph(res.data);
         });
     }
 
     handleGetDiagramFromCheckFiles(e) {
-        e.preventDefault()
         API.post('/github/diagram/files', {"identifies": this.checkedKeys}).then(res => {
             this.diagrams = res.data;
 
@@ -303,17 +299,11 @@ class ClassDiagramViewDynamic extends Component {
 
         const loop = data => {
             var index = 0;
-            return <ButtonGroup style={{marginLeft: "30%", marginTop: "-10%"}}>
-                {data.map((d) => {
+            return data.map((d) => {
                     const i = index;
                     index++;
                     return <Button key={index.toString()} onClick={(e) => this.handleShowDiagram(e, i)}>{i}</Button>
-                })}
-                {/*<DropdownButton title="Dropdown" id="bg-nested-dropdown">*/}
-                {/*<MenuItem eventKey="1">Dropdown link</MenuItem>*/}
-                {/*<MenuItem eventKey="2">Dropdown link</MenuItem>*/}
-                {/*</DropdownButton>*/}
-            </ButtonGroup>;
+                });
 
         };
         return (
@@ -324,34 +314,34 @@ class ClassDiagramViewDynamic extends Component {
                         <span className="input-group-addon">
                           <i className="fa fa-search"/>
                         </span>
-                        <form onSubmit={(e) => this.handleSubmit(e)} style={{width:"100%"}}>
                         <input className="form-control"
                                placeholder="Input project url ..."
                                name="repo"
                                value={this.state.repo} onChange={this.handleRepoChange}
                                type="text"
-                                style={{width: "80%", display:"inline"}}/>
-                            <button type="submit" style={{width: "19%", paddingTop:"5px", paddingBottom:"5px", float: "right"}}>Submit</button>
-                        </form>
+                               style={{width: "80%", display: "inline"}}/>
+                        <Button onClick={(e) => this.handleSubmit(e)} style={{
+                            width: "19%",
+                            paddingTop: "5px",
+                            paddingBottom: "5px",
+                            float: "right"
+                        }}>Submit
+                        </Button>
                     </div>
                 </div>
-
-                <div style={{width: "30%"}}>
-
-                    <form onSubmit={(e) => this.handleGetDiagram(e)}>
-                        <button type="submit">Submit Get Diagram</button>
-                    </form>
-
-                    <form onSubmit={(e) => this.handleGetFileTree(e)}>
-                        <button type="submit">Submit Get File Tree</button>
-                    </form>
-
-                    <form onSubmit={(e) => this.handleGetDiagramFromCheckFiles(e)}>
-                        <button type="submit">Submit Get Diagram From Check Files</button>
-                    </form>
+                <div style={{width: "30%", marginTop: "10px"}}>
+                    <ButtonGroup>
+                        <DropdownButton title="Diagrams" id="bg-nested-dropdown">
+                            <MenuItem onClick={(e) => this.handleGetDiagram(e)} eventKey="1">Submit Get
+                                Diagram</MenuItem>
+                            <MenuItem onClick={(e) => this.handleGetFileTree(e)} eventKey="2">Submit Get File
+                                Tree</MenuItem>
+                            <MenuItem onClick={(e) => this.handleGetDiagramFromCheckFiles(e)} eventKey="3">Submit Get
+                                Diagram From Check Files</MenuItem>
+                        </DropdownButton>
+                        {loop(this.state.diagrams)}
+                    </ButtonGroup>
                 </div>
-
-                {loop(this.state.diagrams)}
 
                 <div>
                     <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}

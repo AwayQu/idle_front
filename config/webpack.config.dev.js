@@ -240,9 +240,14 @@ module.exports = {
             externals: [
                 {
                     module: 'bootstrap',
-                    entry: ['dist/css/bootstrap.min.css'],
-                    // supplements: ['dist/fonts/'],
+                    entry: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
+                    global: 'bootstrap',
                 },
+                // {
+                //     module: 'bootstrap',
+                //     entry: ['dist/css/bootstrap.min.css'],
+                //     // supplements: ['dist/fonts/'],
+                // },
             ],
         }),
         // Add module names to factory functions so they appear in browser profiler.
