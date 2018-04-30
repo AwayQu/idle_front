@@ -52,7 +52,7 @@ export default class Page extends React.Component {
                     </div>
                     <Route path="/" component={App}/>
                     <Route path="/chart" component={Chart}/>
-                    <Route path="/tree" component={ForceDirectedTree}/>
+                    <Route path="/tree" component={ForceDirectedTree} a={"sss"}/>
                     <Route path="/classDiagram" component={ClassDiagramView}/>
                     <Route path="/classDiagramDynamic" component={ClassDiagramViewDynamic}/>
 
