@@ -125,23 +125,25 @@ class RadioTree extends React.Component {
 }
 
 class ClassDiagramViewDynamic extends Component {
+
+    diagrams = [];
+
     constructor(props) {
         super(props);
         this.handleRepoChange = this.handleRepoChange.bind(this);
         this.state = {
-            data: [],
+            diagrams: [],
             repo: "ios_hello",
-            tree: []
+            tree: [],
         };
     }
 
 
     renderGraph(d) {
-        var data = d[0];
         var g = new ClassDiagramGraph().setGraph({});
 
-        var classes = data["classes"];
-        var relations = data["relations"];
+        var classes = d["classes"];
+        var relations = d["relations"];
 
         classes.forEach((v, i) => {
             v.classname = v.className;
@@ -242,6 +244,12 @@ class ClassDiagramViewDynamic extends Component {
         });
     }
 
+    handleShowDiagram(e, i) {
+        e.preventDefault();
+        const d = this.diagrams[i];
+        this.renderGraph(d)
+    }
+
     handleGetDiagram(e) {
         e.preventDefault()
         API.post('github').then(res => {
@@ -252,7 +260,16 @@ class ClassDiagramViewDynamic extends Component {
     handleGetDiagramFromCheckFiles(e) {
         e.preventDefault()
         API.post('/github/diagram/files', {"identifies": this.checkedKeys}).then(res => {
-            this.renderGraph(res.data)
+            this.diagrams = res.data;
+
+            this.setState({diagrams: this.diagrams});
+
+            const data = {
+                "classes": this.diagrams[0].classes,
+                "relations": this.diagrams[0].relations
+            };
+
+            this.renderGraph(data)
         })
 
     }
@@ -282,10 +299,21 @@ class ClassDiagramViewDynamic extends Component {
             display: "inline-block",
             width: "70%",
         };
+
+        const loop = data => {
+            var index = 0;
+            return data.map((d) => {
+                index++;
+                const i = index
+                return <form key={index.toString()} onSubmit={(e) => this.handleShowDiagram(e, i)}>
+                    <button type="submit">Show diagram {index} </button>
+                </form>
+            });
+        };
         return (
 
             <div>
-                <div className="inputBox" >
+                <div className="inputBox">
                     <div className="input-group">
                         <span className="input-group-addon">
                           <i className="fa fa-search"/>
@@ -313,13 +341,14 @@ class ClassDiagramViewDynamic extends Component {
                     <button type="submit">Submit Get Diagram From Check Files</button>
                 </form>
 
+                {loop(this.state.diagrams)}
                 <div>
-                <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
-                           onCheckKeys={(k) => {
-                               this.onCheckKeys(k)
-                           }}/>
+                    <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
+                               onCheckKeys={(k) => {
+                                   this.onCheckKeys(k)
+                               }}/>
 
-                <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
+                    <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
                 </div>
 
             </div>
