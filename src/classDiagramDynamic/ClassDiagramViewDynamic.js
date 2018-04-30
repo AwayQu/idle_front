@@ -324,17 +324,19 @@ class ClassDiagramViewDynamic extends Component {
                         <span className="input-group-addon">
                           <i className="fa fa-search"/>
                         </span>
+                        <form onSubmit={(e) => this.handleSubmit(e)} style={{width:"100%"}}>
                         <input className="form-control"
                                placeholder="Input project url ..."
-                               type="text"/>
+                               name="repo"
+                               value={this.state.repo} onChange={this.handleRepoChange}
+                               type="text"
+                                style={{width: "80%", display:"inline"}}/>
+                            <button type="submit" style={{width: "19%", paddingTop:"5px", paddingBottom:"5px", float: "right"}}>Submit</button>
+                        </form>
                     </div>
                 </div>
 
                 <div style={{width: "30%"}}>
-                    <form onSubmit={(e) => this.handleSubmit(e)}>
-                        <input name="repo" value={this.state.repo} onChange={this.handleRepoChange}/>
-                        <button type="submit">Submit repo</button>
-                    </form>
 
                     <form onSubmit={(e) => this.handleGetDiagram(e)}>
                         <button type="submit">Submit Get Diagram</button>
