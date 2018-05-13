@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 export default axios.create({
-    baseURL: `http://localhost:8080`,
+    //baseURL: `http://localhost:8080`,
+    baseURL: `http://idle.awayqu.me`,
     // timeout: 5000, // 请求的超时时间
     withCredentials: true // 允许携带cookie
 });
