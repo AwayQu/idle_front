@@ -17,6 +17,7 @@ class ClassDiagramViewDynamic extends Component {
     i = 0;
     fold = false;
 
+
     constructor(props) {
         super(props);
         this.handleRepoChange = this.handleRepoChange.bind(this);
@@ -27,7 +28,7 @@ class ClassDiagramViewDynamic extends Component {
             diagrams: [],
             repo: "ios_hello",
             tree: [],
-
+            defaultCheckedKeys: []
         };
     }
 
@@ -82,10 +83,13 @@ class ClassDiagramViewDynamic extends Component {
         // svg.attr('height', g.graph().height * initialScale + 40);
     }
 
-    getFileTree() {
+    getFileTree(callback) {
         API.post("github/fileTree").then((res) => {
             this.renderFileTree(res.data);
-            Message.success("获取目录树成功")
+            Message.success("获取目录树成功");
+            if (callback) {
+                callback()
+            }
         })
     }
 
@@ -107,12 +111,14 @@ class ClassDiagramViewDynamic extends Component {
                 return h[id]
             }
         };
+        const defaultCheckedKeys = [];
         data.fds.forEach((v, i) => {
 
 
             const n = cacheFind(holdDict, v.identify);
             n.title = v.name;
             n.key = v.identify;
+            defaultCheckedKeys.push(v.identify);
 
             if (v.parent) {
                 const parentN = cacheFind(holdDict, v.parent);
@@ -124,9 +130,10 @@ class ClassDiagramViewDynamic extends Component {
                 res.push(n)
             }
         });
-
+        this.checkedKeys = defaultCheckedKeys;
         this.setState({
-            tree: res
+            tree: res,
+            defaultCheckedKeys: defaultCheckedKeys
         });
     }
 
@@ -140,12 +147,15 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     fetchRepo() {
+        const self = this;
         API.post('github/project', {
             "url": this.state.repo
         }).then(res => {
             if (res.data.code === 200) {
                 Message.success('提交成功');
-                this.getFileTree();
+                this.getFileTree(function () {
+                    self.handleGetDiagramFromCheckFiles();
+                });
             } else {
                 Message.error('提交失败');
             }
@@ -166,6 +176,7 @@ class ClassDiagramViewDynamic extends Component {
 
     handleGetDiagramFromCheckFiles(e) {
         API.post('/github/diagram/files', {"identifies": this.checkedKeys}).then(res => {
+            Message.success("获取类图");
             this.diagrams = res.data;
 
             this.setState({diagrams: this.diagrams});
@@ -294,7 +305,8 @@ class ClassDiagramViewDynamic extends Component {
                         <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
                                    onCheckKeys={(k) => {
                                        this.onCheckKeys(k)
-                                   }}/> : ""
+                                   }}
+                                   defaultCheckedKeys={this.state.defaultCheckedKeys}/> : ""
                     }
 
 

@@ -26,20 +26,25 @@ class RadioTree extends React.Component {
         super(props);
         this.style = props.style;
         this.onCheckKeys = props.onCheckKeys;
+        this.defaultCheckedKeys = props.defaultCheckedKeys;
         this.treeData = props.treeData;
 
     }
 
     componentDidMount() {
+
         this.setState({
-            treeData: this.treeData
+            treeData: this.treeData,
+
         })
     }
 
     componentWillReceiveProps(nextProps) {
         this.treeData = nextProps.treeData;
+        this.defaultCheckedKeys = nextProps.defaultCheckedKeys;
         this.setState({
-            treeData: this.treeData
+            treeData: this.treeData,
+            checkedKeys: this.defaultCheckedKeys
         })
 
     }
