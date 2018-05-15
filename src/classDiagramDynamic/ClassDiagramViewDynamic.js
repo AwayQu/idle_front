@@ -197,6 +197,7 @@ class ClassDiagramViewDynamic extends Component {
 
     onCheckKeys(checkedKeys) {
         this.checkedKeys = checkedKeys;
+        this.state.defaultCheckedKeys = checkedKeys;
         console.log(checkedKeys)
     }
 
