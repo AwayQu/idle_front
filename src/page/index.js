@@ -6,6 +6,7 @@ import Chart from "../chart/Chart";
 import ForceDirectedTree from "../force-directed-tree/ForceDirectedTree";
 import ClassDiagramView from "../classDiagram/ClassDiagramView";
 import ClassDiagramViewDynamic from "../classDiagramDynamic/ClassDiagramViewDynamic";
+import 'element-theme-default';
 
 export default class Page extends React.Component {
     constructor(props) {
@@ -31,30 +32,30 @@ export default class Page extends React.Component {
                     <div>
                         <ul>
                             <li style={liStyle}>
-                                <Link to="/">Home</Link>
+                                <Link to="/home">Home</Link>
                             </li>
                             <li style={liStyle}>
-                                <Link to="/chart">chart</Link>
+                                <Link to="/">Class diagram</Link>
                             </li>
-                            <li style={liStyle}>
-                                <Link to="/tree">tree</Link>
-                            </li>
-                            <li style={liStyle}>
-                                <Link to="/classDiagram">Class diagram</Link>
-                            </li>
-                            <li style={liStyle}>
-                                <Link to="/classDiagramDynamic">Class diagram</Link>
-                            </li>
+                            {/*<li style={liStyle}>*/}
+                                {/*<Link to="/chart">chart</Link>*/}
+                            {/*</li>*/}
+                            {/*<li style={liStyle}>*/}
+                                {/*<Link to="/tree">tree</Link>*/}
+                            {/*</li>*/}
+                            {/*<li style={liStyle}>*/}
+                                {/*<Link to="/classDiagram">Class diagram</Link>*/}
+                            {/*</li>*/}
                         </ul>
                         <div style={clearStyle}></div>
 
                         <hr style={hrStyle}/>
                     </div>
-                    <Route path="/" component={App}/>
-                    <Route path="/chart" component={Chart}/>
-                    <Route path="/tree" component={ForceDirectedTree} a={"sss"}/>
-                    <Route path="/classDiagram" component={ClassDiagramView}/>
-                    <Route path="/classDiagramDynamic" component={ClassDiagramViewDynamic}/>
+                    <Route path="/home" component={App}/>
+                    <Route path="/" component={ClassDiagramViewDynamic}/>
+                    {/*<Route path="/chart" component={Chart}/>*/}
+                    {/*<Route path="/tree" component={ForceDirectedTree} a={"sss"}/>*/}
+                    {/*<Route path="/classDiagram" component={ClassDiagramView}/>*/}
 
                 </div>
             </HashRouter>

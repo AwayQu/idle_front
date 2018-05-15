@@ -8,6 +8,7 @@ import API from '../api'
 
 import {Button, ButtonGroup, DropdownButton, MenuItem} from "react-bootstrap";
 import RadioTree from "./RadioTree";
+import { Message } from "element-react";
 
 
 class ClassDiagramViewDynamic extends Component {
@@ -129,6 +130,11 @@ class ClassDiagramViewDynamic extends Component {
         API.post('github/project', {
             "url": this.state.repo
         }).then(res => {
+            if (res.data.code === 200) {
+                Message.success('提交成功');
+            } else {
+                Message.error('提交失败');
+            }
         });
     }
 
