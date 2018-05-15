@@ -8,12 +8,14 @@ import API from '../api'
 
 import {Button, ButtonGroup, DropdownButton, MenuItem} from "react-bootstrap";
 import RadioTree from "./RadioTree";
-import { Message } from "element-react";
+import {Message} from "element-react";
 
 
 class ClassDiagramViewDynamic extends Component {
 
     diagrams = [];
+    i = 0;
+    fold = false;
 
     constructor(props) {
         super(props);
@@ -25,6 +27,7 @@ class ClassDiagramViewDynamic extends Component {
             diagrams: [],
             repo: "ios_hello",
             tree: [],
+
         };
     }
 
@@ -40,7 +43,7 @@ class ClassDiagramViewDynamic extends Component {
             v.x = 0;
             v.y = 0;
             v.width = 260;
-            v.fold = false;
+            v.fold = this.fold;
             // v.foldMethod = true;
             // v.foldAttribute = true;
             g.setClassDiagramNode(v);
@@ -79,12 +82,18 @@ class ClassDiagramViewDynamic extends Component {
         // svg.attr('height', g.graph().height * initialScale + 40);
     }
 
-    handleGetFileTree(e) {
-        e.preventDefault()
+    getFileTree() {
         API.post("github/fileTree").then((res) => {
             this.renderFileTree(res.data);
-
+            Message.success("获取目录树成功")
         })
+    }
+
+    handleGetFileTree(e) {
+        e.preventDefault();
+
+
+        this.getFileTree();
     }
 
     renderFileTree(data) {
@@ -127,11 +136,16 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     handleSubmit(e) {
+        this.fetchRepo();
+    }
+
+    fetchRepo() {
         API.post('github/project', {
             "url": this.state.repo
         }).then(res => {
             if (res.data.code === 200) {
                 Message.success('提交成功');
+                this.getFileTree();
             } else {
                 Message.error('提交失败');
             }
@@ -139,6 +153,7 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     handleShowDiagram(e, i) {
+        this.i = i;
         const d = this.diagrams[i];
         this.renderGraph(d)
     }
@@ -166,7 +181,7 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     componentDidMount() {
-
+        this.fetchRepo();
     }
 
     onCheckKeys(checkedKeys) {
@@ -184,6 +199,18 @@ class ClassDiagramViewDynamic extends Component {
         }
     }
 
+    /**
+     * 显示合并的数据
+     */
+    handleShowMerge() {
+        // TODO: 显示合并的数据
+    }
+
+    handleFold() {
+        this.fold = !this.fold;
+        this.renderGraph(this.diagrams[this.i]);
+    }
+
     render() {
 
         const treeStyle = {
@@ -194,24 +221,24 @@ class ClassDiagramViewDynamic extends Component {
             height: "600px"
             // padding: '0 20px'
         };
-        var svgStyle = {
+        var rightStyle = {
             background: "yellow",
             verticalAlign: "top",
             display: "inline-block",
             width: "70%",
         };
         if (!this.state.showFileTree) {
-            svgStyle.width = "100%",
-            svgStyle.height = "100%"
+            rightStyle.width = "100%",
+                rightStyle.height = "100%"
         }
 
         const loop = data => {
             var index = 0;
             return data.map((d) => {
-                    const i = index;
-                    index++;
-                    return <Button key={index.toString()} onClick={(e) => this.handleShowDiagram(e, i)}>{i}</Button>
-                });
+                const i = index;
+                index++;
+                return <Button key={index.toString()} onClick={(e) => this.handleShowDiagram(e, i)}>{i}</Button>
+            });
 
         };
         return (
@@ -245,32 +272,44 @@ class ClassDiagramViewDynamic extends Component {
                     </div>
                 </div>
 
-                { this.state.showToolBar ?
+                {this.state.showToolBar ?
                     <div style={{width: "30%", marginTop: "10px"}}>
-                    <ButtonGroup>
-                        <DropdownButton title="Diagrams" id="bg-nested-dropdown">
-                            <MenuItem onClick={(e) => this.handleGetDiagram(e)} eventKey="1">Submit Get
-                                Diagram</MenuItem>
-                            <MenuItem onClick={(e) => this.handleGetFileTree(e)} eventKey="2">Submit Get File
-                                Tree</MenuItem>
-                            <MenuItem onClick={(e) => this.handleGetDiagramFromCheckFiles(e)} eventKey="3">Submit Get
-                                Diagram From Check Files</MenuItem>
-                        </DropdownButton>
-                        {loop(this.state.diagrams)}
-                    </ButtonGroup>
-                </div> : ""
+                        <ButtonGroup>
+                            <DropdownButton title="Diagrams" id="bg-nested-dropdown">
+                                <MenuItem onClick={(e) => this.handleGetDiagram(e)} eventKey="1">Submit Get
+                                    Diagram</MenuItem>
+                                <MenuItem onClick={(e) => this.handleGetFileTree(e)} eventKey="2">Submit Get File
+                                    Tree</MenuItem>
+                                <MenuItem onClick={(e) => this.handleGetDiagramFromCheckFiles(e)} eventKey="3">Submit
+                                    Get
+                                    Diagram From Check Files</MenuItem>
+                            </DropdownButton>
+                        </ButtonGroup>
+                    </div> : ""
                 }
 
+
                 <div style={{height: "700px"}}>
-                    { this.state.showFileTree ?
+                    {this.state.showFileTree ?
                         <RadioTree treeData={this.state.tree ? this.state.tree : []} style={treeStyle}
                                    onCheckKeys={(k) => {
                                        this.onCheckKeys(k)
                                    }}/> : ""
                     }
-                    <svg className="svg" style={svgStyle} ref={(r) => this.chartRef = r}/>
-                </div>
 
+
+                    <div style={rightStyle}>
+                        <div style={{float: "right", marginTop: "10px"}}>
+                            <ButtonGroup>
+                                <Button onClick={(e) => this.handleShowMerge()}>显示合并</Button>
+                                <Button onClick={(e) => this.handleFold()}>fold</Button>
+                                {loop(this.state.diagrams)}
+                            </ButtonGroup>
+                        </div>
+                        <svg className="svg" ref={(r) => this.chartRef = r}/>
+                    </div>
+
+                </div>
             </div>
         );
     }
