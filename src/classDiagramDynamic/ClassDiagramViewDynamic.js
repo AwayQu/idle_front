@@ -99,7 +99,6 @@ class ClassDiagramViewDynamic extends Component {
             }
         })
 
-        API.get("trigger");
     }
 
     handleGetFileTree(e) {
@@ -113,6 +112,7 @@ class ClassDiagramViewDynamic extends Component {
     connectStomp() {
         // use over  this.ws is not the expect object
         // https://github.com/jmesnil/stomp-websocket/issues/129
+        const self = this;
         const stomp = Stomp.client('ws://localhost:8080/websocket/idle');
         stomp.connect({}, function (frame) {
 
@@ -130,6 +130,8 @@ class ClassDiagramViewDynamic extends Component {
 
             stomp.subscribe('/topic/status', function(messageOutput) {
                 console.log("New Message: "+messageOutput.body);
+                messageOutput = JSON.parse(messageOutput.body);
+                self.setState({status: messageOutput.jobName + messageOutput.taskName + messageOutput.progress + "%" });
             });
 
         });
@@ -179,7 +181,19 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     handleSubmit(e) {
-        this.fetchRepo();
+
+        const self = this;
+        API.post('github/project', {
+            "url": this.state.repo
+        }).then(res => {
+            if (res.data.code === 200) {
+                Message.success('提交成功');
+            } else {
+                Message.error('提交失败');
+            }
+        });
+
+        // this.fetchRepo();
     }
 
     fetchRepo() {
@@ -229,7 +243,7 @@ class ClassDiagramViewDynamic extends Component {
     }
 
     componentDidMount() {
-        this.fetchRepo();
+        // this.fetchRepo();
     }
 
     onCheckKeys(checkedKeys) {
@@ -293,6 +307,7 @@ class ClassDiagramViewDynamic extends Component {
         return (
 
             <div>
+                { this.state.status ? this.state.status : ""}
                 <div style={{float: "right"}}>
                     <ButtonGroup>
                         {/*<Button  onClick={(e) => this.handleShowHide(e, 1)}>Show Search</Button>*/}
