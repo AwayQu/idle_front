@@ -5,7 +5,8 @@ import * as d3 from 'd3';
 import {ClassDiagramRender, ClassDiagramGraph} from "d3-uml/src/uml/uml";
 import {Relation} from "d3-uml/src/uml/class-diagram-relationship"
 import API from '../api'
-
+import SockJS from 'sockjs-client' // TODO: sockjs-client
+import Stomp from 'stompjs'
 import {Button, ButtonGroup, DropdownButton, MenuItem} from "react-bootstrap";
 import RadioTree from "./RadioTree";
 import {Message} from "element-react";
@@ -17,6 +18,8 @@ class ClassDiagramViewDynamic extends Component {
     i = 0;
     fold = false;
 
+
+    stomp = null;
 
     constructor(props) {
         super(props);
@@ -30,6 +33,10 @@ class ClassDiagramViewDynamic extends Component {
             tree: [],
             defaultCheckedKeys: []
         };
+
+        this.connectStomp();
+
+
     }
 
 
@@ -91,6 +98,8 @@ class ClassDiagramViewDynamic extends Component {
                 callback()
             }
         })
+
+        API.get("trigger");
     }
 
     handleGetFileTree(e) {
@@ -98,6 +107,33 @@ class ClassDiagramViewDynamic extends Component {
 
 
         this.getFileTree();
+    }
+
+
+    connectStomp() {
+        // use over  this.ws is not the expect object
+        // https://github.com/jmesnil/stomp-websocket/issues/129
+        const stomp = Stomp.client('ws://localhost:8080/websocket/idle');
+        stomp.connect({}, function (frame) {
+
+            console.log('Connected: ' + frame);
+            stomp.subscribe('/topic/greetings', function (greeting) {
+                console.log(JSON.parse(greeting.body).content);
+            });
+
+            stomp.send("/app/hello", {}, JSON.stringify({'name': "away"}));
+
+
+            stomp.subscribe('/app/initial', function (messageOutput){
+                console.log("INITIAL: "+messageOutput.body);
+            });
+
+            stomp.subscribe('/topic/status', function(messageOutput) {
+                console.log("New Message: "+messageOutput.body);
+            });
+
+        });
+        this.stomp = stomp;
     }
 
     renderFileTree(data) {
@@ -156,6 +192,7 @@ class ClassDiagramViewDynamic extends Component {
                 this.getFileTree(function () {
                     self.handleGetDiagramFromCheckFiles();
                 });
+
             } else {
                 Message.error('提交失败');
             }
